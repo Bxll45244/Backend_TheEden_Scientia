@@ -1,11 +1,10 @@
-// userController.js
-
-import jwt from "jsonwebtoken";
 import User from "../models/User.js";
+import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs"; 
-import Booking from "../models/Booking.js"; // ✨ เพิ่ม import นี้
-import Asset from "../models/Asset.js"; // ✨ เพิ่ม import นี้
-import mongoose from "mongoose"; // ✨ เพิ่ม import นี้
+// ไม่ได้ใช้ Booking, mongoose, Asset ในไฟล์นี้
+// import Booking from "../models/Booking.js"; 
+// import mongoose from "mongoose";
+// import Asset from "../models/Asset.js";
 
 export const generateToken = (userId, res) => {
     const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
@@ -14,21 +13,8 @@ export const generateToken = (userId, res) => {
 
     res.cookie("jwt", token, { // 🔹 ตั้งค่า cookie สำหรับ JWT
         httpOnly: true, // ห้าม JavaScript ฝั่ง frontend อ่าน cookie
-        
-        // --- ส่วนที่สำคัญมากสำหรับการ Deploy ที่เป็น HTTPS และ Cross-Origin ---
-        // เมื่อ Deploy ไปยัง HTTPS Environment (เช่น Render, Vercel) secure ควรเป็น true เสมอ
-        // การตั้งค่า secure: true ตรงๆ จะทำให้มั่นใจว่าเงื่อนไขนี้ถูกบังคับใช้
-        secure: true, // <--- แก้ไขตรงนี้ จาก process.env.NODE_ENV === "production" เป็น true ตรงๆ
-
-        // SameSite: 'None' อนุญาตให้ส่ง Cookie ข้าม Domain/Origin (ต้องใช้คู่กับ secure: true)
-        // ถ้า Frontend (Vercel) และ Backend (Render) อยู่คนละ Domain ควรใช้ 'None'
-        sameSite: "None", // <--- แก้ไขตรงนี้ จาก "Lax" เป็น "None"
-
-        // domain: โดยปกติไม่จำเป็นต้องระบุถ้าใช้ SameSite: "None" และเป็นคนละโดเมนกัน
-        // หากยังเจอปัญหา ลองศึกษาเพิ่มเติมเรื่อง domain attribute
-        // domain: ".your-deployed-frontend-domain.com", 
-        // domain: process.env.COOKIE_DOMAIN, 
-
+        secure: process.env.NODE_ENV === "production", // ใช้ https ใน production
+        sameSite: "Lax", // ป้องกัน CSRF (ใช้ "None" ถ้าจะส่งจาก frontend ต่าง origin)
         maxAge: 24 * 60 * 60 * 1000, // 1 วัน
     });
 };
@@ -951,4 +937,4 @@ export const markCaddyAsAvailable = async (req, res) => {
         console.log("--- End of markCaddyAsAvailable Debug ---");
     }
 };
-
+// แก้เพิ่มและต้องปรับ logic ทีหลังให้โค้ดไม่เยอะเกิน
